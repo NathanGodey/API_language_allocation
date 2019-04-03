@@ -41,7 +41,6 @@ def get_course_by_id(course_id):
 def get_course_by_language(language):
     courses = mongo.db.courses
     courses_of_language = courses.find({"language": language})
-    output = []
     if courses_of_language:
         Output = []
         for course in courses_of_language:
@@ -57,6 +56,23 @@ def get_course_by_language(language):
     else:
         Output = "No matching course for language " + str(language)
         html_code = 400
+    return jsonify({'result': Output}), html_code
+
+@app.route('/courses/not-english/', methods=['GET'])
+def get_course_not_english():
+    courses = mongo.db.courses
+    Output = []
+    for course in courses_of_language:
+        if course["language"] != "Anglais":
+            output={}
+            output["id"] = course["id"]
+            output["name"] = course["name"]
+            output["language"] = course["language"]
+            output["creneaux"] = course["creneaux"]
+            output["min_students"] = course["min_students"]
+            output["max_students"] = course["max_students"]
+            Output.append(output)
+        html_code = 200
     return jsonify({'result': Output}), html_code
 
 
@@ -130,15 +146,31 @@ def get_creneau_by_id(creneau_id):
     if creneau:
         output={}
         output["id"] = creneau["id"]
-        output["day"] = creneaux["day"]
-        output["begin"] = creneaux["begin"]
-        output["end"] = creneaux["end"]
-        output["type"] = creneaux["type"]
+        output["day"] = creneau["day"]
+        output["begin"] = creneau["begin"]
+        output["end"] = creneau["end"]
+        output["type"] = creneau["type"]
         html_code = 200
     else:
         output = "No matching creneau for id " + str(course_id)
         html_code = 400
     return jsonify({'result': output}), html_code
+
+@app.route('/creneaux/by-promotion/<promo>', methods=['GET'])
+def get_creneau_by_promo(promo):
+    creneaux = mongo.db.creneaux.find()
+    Output = []
+    for creneau in creneaux:
+        if promo in creneau["type"]:
+            output={}
+            output["id"] = creneau["id"]
+            output["day"] = creneau["day"]
+            output["begin"] = creneau["begin"]
+            output["end"] = creneau["end"]
+            output["type"] = creneau["type"]
+            Output.append(output)
+        html_code = 200
+    return jsonify({'result': Output}), html_code
 
 
 @app.route('/creneaux/<creneau_id>', methods=['POST'])
@@ -162,7 +194,7 @@ def update_creneau(creneau_id):
     return jsonify({'result': output}), html_code
 
 
-@app.route('/creneau/', methods=['PUT'])
+@app.route('/creneaux/', methods=['PUT'])
 def add_creneau():
     creneaux = mongo.db.creneaux
     id = get_max_course_id()+1

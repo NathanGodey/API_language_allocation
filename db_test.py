@@ -4,9 +4,8 @@ from pymongo import MongoClient
 client = MongoClient()
 
 app_db = client.language_allocation_database
-app_db.courses.remove({})
-app_db.students.remove({})
-
+app_db.courses.delete_many({})
+app_db.students.delete_many({})
 
 def write_creneau(id=-1, day='', begin='', end='', type=''):
     creneau = {}
