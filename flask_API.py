@@ -18,6 +18,8 @@ CORS(app)
 
 app.config['MONGO_DBNAME'] = 'language_allocation_database'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/language_allocation_database'
+app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 mongo = PyMongo(app)
 
@@ -31,6 +33,7 @@ def get_max_collection_id(collection):
 
 
 @app.route('/courses/', methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def get_all_courses(course_id):
     courses = mongo.db.courses
     course = courses.find()
@@ -51,6 +54,7 @@ def get_all_courses(course_id):
 
 
 @app.route('/courses/<course_id>', methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def get_course_by_id(course_id):
     courses = mongo.db.courses
     course = courses.find_one({"id": int(course_id)})
@@ -70,6 +74,7 @@ def get_course_by_id(course_id):
 
 
 @app.route('/courses/by-language/<language>', methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def get_course_by_language(language):
     courses = mongo.db.courses
     courses_of_language = courses.find({"language": language})
@@ -91,6 +96,7 @@ def get_course_by_language(language):
     return jsonify({'result': Output}), html_code
 
 @app.route('/courses/not-english/', methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def get_course_not_english():
     courses = mongo.db.courses
     Output = []
@@ -132,6 +138,7 @@ def update_course(course_id):
 
 
 @app.route('/courses/', methods=['PUT'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def add_course():
     courses = mongo.db.courses
     id = get_max_collection_id(courses)+1
@@ -156,6 +163,7 @@ def add_course():
 
 
 @app.route('/courses/<course_id>', methods=['DELETE'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def remove_course(course_id):
     courses = mongo.db.courses
     course_removed = courses.remove({"id":int(course_id)})
@@ -172,6 +180,7 @@ def remove_course(course_id):
 
 
 @app.route('/creneaux/<creneaux_id>', methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def get_creneau_by_id(creneau_id):
     creneaux = mongo.db.creneaux
     creneau = creneaux.find_one({"id": int(creneau_id)})
@@ -189,6 +198,7 @@ def get_creneau_by_id(creneau_id):
     return jsonify({'result': output}), html_code
 
 @app.route('/creneaux/by-promotion/<promo>', methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def get_creneau_by_promo(promo):
     creneaux = mongo.db.creneaux.find()
     Output = []
@@ -206,6 +216,7 @@ def get_creneau_by_promo(promo):
 
 
 @app.route('/creneaux/<creneau_id>', methods=['POST'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def update_creneau(creneau_id):
     creneaux = mongo.db.creneaux
     new_day = request.get_json(force=True)['day']
@@ -227,6 +238,7 @@ def update_creneau(creneau_id):
 
 
 @app.route('/creneaux/', methods=['PUT'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def add_creneau():
     creneaux = mongo.db.creneaux
     id = get_max_course_id()+1
@@ -249,6 +261,7 @@ def add_creneau():
 
 
 @app.route('/creneaux/<creneau_id>', methods=['DELETE'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def remove_creneau(creneau_id):
     creneaux = mongo.db.creneaux
     creneau_removed = creneaux.remove({"id":int(creneau_id)})
@@ -261,6 +274,7 @@ def remove_creneau(creneau_id):
     return jsonify({'result': output}), html_code
 
 @app.route('/users/students/<student_id>', methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def get_student_by_id(student_id):
     users = mongo.db.users
     student = users.find_one({"type": "student", "id": int(student_id)})
@@ -277,6 +291,7 @@ def get_student_by_id(student_id):
     return jsonify({'result': output}), html_code
 
 @app.route('/users/students/', methods=['PUT'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def add_student():
     users = mongo.db.users
     id = get_max_collection_id(users)+1
@@ -298,6 +313,7 @@ def add_student():
     return jsonify({'result': output}), html_code
 
 @app.route('/users/students/<student_id>', methods=['POST'])
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def update_student_vows(student_id):
     users = mongo.db.users
     new_vows = request.get_json(force=True)['vows']
@@ -311,6 +327,7 @@ def update_student_vows(student_id):
 
 
 @app.route('/login')
+@cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
 def data():
     # here we want to get the value of user (i.e. ?user=some-value)
     token = request.args.get('id')
