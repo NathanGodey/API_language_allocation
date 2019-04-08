@@ -9,10 +9,10 @@ import pymongo
 import random
 import string
 from ast import literal_eval
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-CORS(app)
+cors = CORS(app, resources={r"/*":{"origins": "localhost"}})
 
 
 
@@ -34,22 +34,25 @@ def get_max_collection_id(collection):
 
 @app.route('/courses/', methods=['GET'])
 @cross_origin(origin='localhost',headers=['Content-Type','Authorization'])
-def get_all_courses(course_id):
+def get_all_courses():
     courses = mongo.db.courses
-    course = courses.find()
-    if course:
-        output={}
-        output["id"] = course["id"]
-        output["name"] = course["name"]
-        output["language"] = course["language"]
-        output["creneaux"] = course["creneaux"]
-        output["min_students"] = course["min_students"]
-        output["max_students"] = course["max_students"]
+    all_courses = courses.find()
+    if all_courses:
+        Output = []
+        for course in all_courses:
+            output={}
+            output["id"] = course["id"]
+            output["name"] = course["name"]
+            output["language"] = course["language"]
+            output["creneaux"] = course["creneaux"]
+            output["min_students"] = course["min_students"]
+            output["max_students"] = course["max_students"]
+            Output.append(output)
         html_code = 200
     else:
-        output = "No matching course for id " + str(course_id)
+        output = "No courses"
         html_code = 400
-    return jsonify({'result': output}), html_code
+    return jsonify({'result': Output}), html_code
 
 
 
