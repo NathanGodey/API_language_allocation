@@ -6,8 +6,13 @@ from bson.objectid import ObjectId
 import bson.json_util
 import json
 import pymongo
+import random
+import string
+from __init__ import app
+
 
 app = Flask(__name__)
+
 
 app.config['MONGO_DBNAME'] = 'language_allocation_database'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/language_allocation_database'
@@ -15,8 +20,33 @@ app.config['MONGO_URI'] = 'mongodb://localhost:27017/language_allocation_databas
 mongo = PyMongo(app)
 
 
-def get_max_course_id():
-    return int(mongo.db.courses.find_one(sort=[("id", -1)])["id"])
+def get_max_collection_id(collection):
+    max_column = collection.find_one(sort=[("id", -1)])
+    if max_column==None:
+        return 0
+    return int(max_column["id"])
+
+
+
+@app.route('/courses/', methods=['GET'])
+def get_all_courses(course_id):
+    courses = mongo.db.courses
+    course = courses.find()
+    if course:
+        output={}
+        output["id"] = course["id"]
+        output["name"] = course["name"]
+        output["language"] = course["language"]
+        output["creneaux"] = course["creneaux"]
+        output["min_students"] = course["min_students"]
+        output["max_students"] = course["max_students"]
+        html_code = 200
+    else:
+        output = "No matching course for id " + str(course_id)
+        html_code = 400
+    return jsonify({'result': output}), html_code
+
+
 
 @app.route('/courses/<course_id>', methods=['GET'])
 def get_course_by_id(course_id):
@@ -102,7 +132,7 @@ def update_course(course_id):
 @app.route('/courses/', methods=['PUT'])
 def add_course():
     courses = mongo.db.courses
-    id = get_max_course_id()+1
+    id = get_max_collection_id(courses)+1
     new_name = request.get_json(force=True)['name']
     new_language = request.get_json(force=True)['language']
     new_creneaux = request.get_json(force=True)['creneaux']
@@ -225,6 +255,51 @@ def remove_creneau(creneau_id):
         html_code = 200
     else:
         output = "Could not remove creneau"
+        html_code = 400
+    return jsonify({'result': output}), html_code
+
+@app.route('/users/students/<student_id>', methods=['GET'])
+def get_student_by_id(student_id):
+    users = mongo.db.users
+    student = users.find_one({"type": "student", "id": int(student_id)})
+    if student:
+        output=student
+        html_code = 200
+    else:
+        output = "No matching student for id " + str(student_id)
+        html_code = 400
+    return jsonify({'result': output}), html_code
+
+@app.route('/users/students/', methods=['PUT'])
+def add_student():
+    users = mongo.db.users
+    id = get_max_collection_id(users)+1
+    new_name = request.get_json(force=True)['name']
+    new_email = request.get_json(force=True)['email']
+    new_token = ''.join(random.choices(string.ascii_uppercase +string.ascii_lowercase+ string.digits, k=35))
+    student_inserted = users.insert({"id":int(id),
+                                                           "name":new_name,
+                                                           "email":new_email,
+                                                           "token":new_token,
+                                                           "vows":[],
+                                                           "type":"student"})
+    if student_inserted:
+        output = {"id":id}
+        html_code = 200
+    else:
+        output = "Could not add student"
+        html_code = 400
+    return jsonify({'result': output}), html_code
+
+@app.route('/users/students/<student_id>', methods=['POST'])
+def update_student_vows(student_id):
+    users = mongo.db.users
+    new_vows = request.get_json(force=True)['vows']
+    student_updated = users.update({"id":int(student_id)}, {"vows": new_vows})
+    if student_updated:
+        html_code = 200
+    else:
+        output = "Could not add student"
         html_code = 400
     return jsonify({'result': output}), html_code
 
