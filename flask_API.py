@@ -8,8 +8,7 @@ import json
 import pymongo
 import random
 import string
-from __init__ import app
-
+from ast import literal_eval
 
 app = Flask(__name__)
 
@@ -263,7 +262,11 @@ def get_student_by_id(student_id):
     users = mongo.db.users
     student = users.find_one({"type": "student", "id": int(student_id)})
     if student:
-        output=student
+        output={}
+        output["id"] = student["id"]
+        output["name"] = student["name"]
+        output["email"] = student["email"]
+        output["vows"] = student["vows"]
         html_code = 200
     else:
         output = "No matching student for id " + str(student_id)
@@ -303,5 +306,19 @@ def update_student_vows(student_id):
         html_code = 400
     return jsonify({'result': output}), html_code
 
+
+@app.route('/login')
+def data():
+    # here we want to get the value of user (i.e. ?user=some-value)
+    token = request.args.get('id')
+    users = mongo.db.users
+    student = student.find_one({"token" : token})
+    if student:
+        output=student
+        html_code = 200
+    else:
+        output = "No matching student for token " + str(student_id)
+        html_code = 400
+    return jsonify({'result': output}), html_code
 if __name__ == '__main__':
     app.run(debug=True)
