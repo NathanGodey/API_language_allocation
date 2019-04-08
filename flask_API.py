@@ -9,8 +9,11 @@ import pymongo
 import random
 import string
 from ast import literal_eval
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
 
 
 app.config['MONGO_DBNAME'] = 'language_allocation_database'
@@ -312,12 +315,16 @@ def data():
     # here we want to get the value of user (i.e. ?user=some-value)
     token = request.args.get('id')
     users = mongo.db.users
-    student = student.find_one({"token" : token})
+    student = users.find_one({"token" : token})
     if student:
-        output=student
+        output={}
+        output["id"] = student["id"]
+        output["name"] = student["name"]
+        output["email"] = student["email"]
+        output["vows"] = student["vows"]
         html_code = 200
     else:
-        output = "No matching student for token " + str(student_id)
+        output = "No matching student for this token"
         html_code = 400
     return jsonify({'result': output}), html_code
 if __name__ == '__main__':
